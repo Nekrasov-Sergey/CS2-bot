@@ -7,10 +7,12 @@ PROTO_FILES_DIR = api
 GO_OUT_DIR = pkg/$(SERVICE_NAME)-api
 # Proto файлы на компиляцию
 PROTO_FILES = $(SERVICE_NAME)-api.proto
-# 8 символов послкднего коммита
+# 8 символов последнего коммита
 LAST_COMMIT_HASH = $(shell git rev-parse HEAD | cut -c -8)
-.DEFAULT_GOAL := run
 
+.SILENT:
+
+.DEFAULT_GOAL := run
 
 # example usage: `make sql/add_email_to_users`
 sql/%:
@@ -19,13 +21,12 @@ sql/%:
 # Запуск сервиса
 .PHONY: build
 build:
-	go build -o bin/$(SERVICE_NAME)  $(PWD)/cmd/$(SERVICE_NAME)
-	make migrate
+	docker-compose build
 
 # Запуск сервиса
 .PHONY: run
 run:
-	go run $(PWD)/cmd/$(SERVICE_NAME)
+	docker-compose up -d
 
 # Запустить тесты
 .PHONY: test

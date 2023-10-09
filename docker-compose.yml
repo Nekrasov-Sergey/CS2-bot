@@ -1,19 +1,36 @@
-version: "3.8" # версия вашего docker-compose
-services: # имеджи, которые запустятся по вашему желанию
-  db: # название моего имеджа
+version: '3.8'
+services:
+  cs2-bot:
     restart: always
-    image: postgres:12 # скачает image postgres 12 версии
-    volumes: # часть настроек для хранения данных, пока для нас это не важно
-      - type: volume
-        source: postgresdb-data
-        target: /var/lib/postgresql/data
-    ports: # порты
-      - "5432:5432"
-    environment: # переменные окружения, меняйте их если хотите поменять пароль, логин или название стартовой базы данных
-      POSTGRES_USER: vkbot_user
-      POSTGRES_DB: vkbot_db
-      POSTGRES_PASSWORD: vkbot_password
+    build: ./
+    command: ./cs2-bot
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_HOST=${DB_HOST}
+      - VK_TOKEN=${VK_TOKEN}
 
-volumes: # часть настроек для хранения данных
-  postgresdb-data:
-    driver: local
+  db:
+    restart: always
+    image: postgres:latest
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - .database/postgres/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASS}
+
